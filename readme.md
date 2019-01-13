@@ -44,6 +44,6 @@ score | integer | the player's score.
 ```json
 {
     "name": "EXAMPLE",
-    "score": 1337,
+    "score": 1337
 }
 ```
