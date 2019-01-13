@@ -2,6 +2,7 @@ Highscores Server
 ==============================
 
 [![GoDoc](https://godoc.org/github.com/fractalbach/highscores/scoreboard?status.svg)](https://godoc.org/github.com/fractalbach/highscores/scoreboard)
+[![Build Status](https://travis-ci.org/fractalbach/highscores.svg?branch=master)](https://travis-ci.org/fractalbach/highscores)
 
 Simple and lightweight Highscores server designed for the
 [Balloon Grab](https://github.com/fractalbach/float-up)
