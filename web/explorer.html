@@ -1,0 +1,87 @@
+<html>
+<head>
+    <title>Scoreboard Explorer</title>
+</head>
+<body>
+
+<h1>Scoreboard Explorer</h1>
+
+<h2>Fetcher</h2>
+<fieldset>
+    <legend>1. Server</legend>
+
+    <label for="address">Server Address:</label>
+    <input type="url" name="address" id="board_address" value="http://localhost:8080"><br/>
+
+    <button id="button_get">GET</button><br/>
+</fieldset>
+
+<fieldset>
+    <legend>2. Post Score</legend>
+
+    <label for="username">Player Name:</label>
+    <input type="text" name="username" id="board_username" placeholder="username"><br/>
+
+    <label for="score">Player Score:</label>
+    <input type="number" name="score" id="board_score" placeholder="1337"><br/>
+
+    <button id="button_post">POST</button><br/>
+
+</fieldset>
+
+<h2>Results</h2>
+<pre id="board"></pre>
+
+<style>
+fieldset {
+    padding: 1em auto;
+    margin: 1em auto;
+}
+legend {
+    background-color: #000;
+    color: #fff;
+    padding: 3px 6px;
+}
+.output {
+    font: 1rem 'Fira Sans', sans-serif;
+}
+input {
+    margin: .4rem;
+}
+</style>
+
+<script type="text/javascript" src="syntaxHighlight.js"></script>
+<script type="text/javascript" src="example_post.js"></script>
+<script>
+(function(){
+
+    const q = document.querySelector.bind(document);
+    const DISPLAY_BOARD = q('#board');
+    const ELE_ADDRESS = q('#board_address');
+    const ELE_USERNAME = q('#board_username');
+    const ELE_SCORE = q('#board_score');
+    const BUTTON_GET = q("#button_get");
+    const BUTTON_POST = q("#button_post");
+
+    function updateBoard(data) {
+        DISPLAY_BOARD.innerHTML = syntaxHighlight(JSON.stringify(data, null, 2));
+    }
+
+    BUTTON_GET.addEventListener('click', function(e){
+        let address = ELE_ADDRESS.value;
+        console.log(address);
+        getBoardData(address, updateBoard);
+    });
+
+    BUTTON_POST.addEventListener('click', function(e){
+        let address = ELE_ADDRESS.value;
+        let name = ELE_USERNAME.value;
+        let score = parseInt(ELE_SCORE.value);
+        postScore(address, name, score);
+        getBoardData(address, updateBoard);
+    });
+
+}());
+</script>
+</body>
+</html>

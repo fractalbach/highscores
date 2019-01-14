@@ -12,7 +12,7 @@ import (
 
 type Message struct {
 	Name  string
-	Score int
+	Score float64
 }
 
 var myboard = scoreboard.NewScoreboard(
@@ -25,14 +25,14 @@ func myInternalError(err error) string {
 }
 
 // GET board info
-// displays information about the board.
+// displays all information about the scoreboard.
 func getBoardHandler(w http.ResponseWriter, r *http.Request) {
-	b, err := json.MarshalIndent(myboard, "", "  ")
+	b, err := json.Marshal(myboard)
 	if err != nil {
 		http.Error(w, myInternalError(err), http.StatusInternalServerError)
 		return
 	}
-	fmt.Fprintf(w, string(b))
+	w.Write(b)
 }
 
 // POST new score
@@ -41,19 +41,25 @@ func postBoardHandler(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 	msg := Message{}
 	if err := decoder.Decode(&msg); err != nil {
-		http.Error(w, "Bad Request. Invalid JSON Message.", http.StatusBadRequest)
+		http.Error(w, "Bad Request. Invalid JSON Message: "+err.Error(), http.StatusBadRequest)
+		return
 	}
-	myboard.Post(scoreboard.NewEntry(msg.Name, msg.Score))
+	myboard.Post(scoreboard.NewEntry(msg.Name, int(msg.Score)))
 }
 
 // Board handler
 // takes GET and POST requests and calls the correct handler.
 func handler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+	w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	switch r.Method {
 	case "GET":
 		getBoardHandler(w, r)
 	case "POST":
 		postBoardHandler(w, r)
+	case "OPTIONS":
+		return
 	default:
 		http.Error(w, "Method Not Allowed.", http.StatusMethodNotAllowed)
 	}
