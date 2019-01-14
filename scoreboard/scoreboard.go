@@ -7,10 +7,15 @@ package scoreboard
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"sort"
 	"time"
+)
+
+const (
+	DefaultMaxEntries = 20
 )
 
 // ScoreType specifies the golang type that represents a score.
@@ -38,6 +43,15 @@ type Scoreboard struct {
 	Entries     []*Entry
 }
 
+// NewScoreboard creates a scoreboard object with default settings.
+func NewScoreboard(title, description string) *Scoreboard {
+	return &Scoreboard{
+		Title:       title,
+		Description: description,
+		MaxEntries:  DefaultMaxEntries,
+	}
+}
+
 // Entry holds a single entry on the scoreboard.
 // When a player beats the other highscores, a new entry is created and
 // saved into the scoreboard.
@@ -53,21 +67,21 @@ func NewEntry(name string, score int) *Entry {
 	return &Entry{
 		Name:  name,
 		Score: ScoreType(score),
-		Time:  time.Now(),
+		Time:  time.Now().UTC(),
 	}
 }
 
-type Entries []*Entry
+type entries []*Entry
 
-func (e Entries) Len() int      { return len(e) }
-func (e Entries) Swap(i, j int) { e[i], e[j] = e[j], e[i] }
+func (e entries) Len() int      { return len(e) }
+func (e entries) Swap(i, j int) { e[i], e[j] = e[j], e[i] }
 
-type ByScore struct{ Entries }
+type byScore struct{ entries }
 
 // Less is actually More, because we want the highest numbers to be first.
-func (s ByScore) Less(i, j int) bool {
-	a := s.Entries[i].Score
-	b := s.Entries[j].Score
+func (s byScore) Less(i, j int) bool {
+	a := s.entries[i].Score
+	b := s.entries[j].Score
 	return a.Compare(b) > 0
 }
 
@@ -78,9 +92,12 @@ Returns false if the score is too low and the board is already full.
 Returns true if the entry is successfull added.
 */
 func (s *Scoreboard) Post(entry *Entry) bool {
+	if s.MaxEntries == 0 {
+		return false
+	}
 	if len(s.Entries) < s.MaxEntries {
 		s.Entries = append(s.Entries, entry)
-		sort.Stable(ByScore{s.Entries})
+		sort.Stable(byScore{s.Entries})
 		return true
 	}
 	incomingScore := entry.Score
@@ -131,5 +148,13 @@ func (s *Scoreboard) lowestEntry() *Entry {
 func (s *Scoreboard) insert(e *Entry) {
 	index := len(s.Entries) - 1
 	s.Entries[index] = e
-	sort.Stable(ByScore{s.Entries})
+	sort.Stable(byScore{s.Entries})
+}
+
+func (s Scoreboard) GoString() string {
+	out := ""
+	for _, e := range s.Entries {
+		out += fmt.Sprintf("(%v) ", e.Score)
+	}
+	return out
 }
