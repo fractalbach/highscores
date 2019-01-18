@@ -86,6 +86,14 @@ func TestSave(t *testing.T) {
 	t.Log(f.Name(), f.Size(), f.Mode(), f.ModTime(), f.IsDir())
 }
 
+func TestFileExists(t *testing.T) {
+	exists := BoardExists(examplePrefix)
+	if !exists {
+		t.Error("BoardExists returned false, but the file should be there.")
+		t.Fail()
+	}
+}
+
 func TestLoad(t *testing.T) {
 	loadedBoard := Load(examplePrefix)
 	s := scoresString(loadedBoard)

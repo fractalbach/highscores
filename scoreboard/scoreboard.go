@@ -10,7 +10,9 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"os"
 	"sort"
+	"sync"
 	"time"
 )
 
@@ -41,6 +43,7 @@ type Scoreboard struct {
 	Description string
 	MaxEntries  int
 	Entries     []*Entry
+	mutex       sync.Mutex
 }
 
 // NewScoreboard creates a scoreboard object with default settings.
@@ -92,6 +95,8 @@ Returns false if the score is too low and the board is already full.
 Returns true if the entry is successfull added.
 */
 func (s *Scoreboard) Post(entry *Entry) bool {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
 	if s.MaxEntries == 0 {
 		return false
 	}
@@ -111,6 +116,8 @@ func (s *Scoreboard) Post(entry *Entry) bool {
 
 // SaveAs : saves the scoreboard into a json file.
 func (s *Scoreboard) SaveAs(filename string) {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
 	filename = filename + ".json"
 	b, err := json.Marshal(s)
 	if err != nil {
@@ -137,6 +144,27 @@ func Load(filename string) *Scoreboard {
 		log.Println("Load :: unable to convert file data to json :: ", err)
 	}
 	return scoreboard
+}
+
+// BoardExists looks to see if the board has already been saved in this current
+// directory.  Returns true if it can find the board, returns false otherwise.
+func BoardExists(filename string) bool {
+	if _, err := os.Stat(filename + ".json"); !os.IsNotExist(err) {
+		return true
+	}
+	return false
+}
+
+// LastModifed returns the last-modified time of the file of the given
+// scoreboard.  The second return value is an "ok" check.  If there are any
+// problems accessing the file (or if it doesn't exist), then that boolean
+// will return false.
+func LastModified(filename string) (time.Time, bool) {
+	info, err := os.Stat(filename + ".json")
+	if err != nil {
+		return time.Time{}, false
+	}
+	return info.ModTime(), true
 }
 
 func (s *Scoreboard) lowestEntry() *Entry {
