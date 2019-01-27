@@ -11,6 +11,11 @@ import (
 	"github.com/fractalbach/highscores/scoreboard"
 )
 
+type Page struct {
+	Scoreboard *scoreboard.Scoreboard
+	PageViews  int
+}
+
 const (
 	filename           = "first"
 	exampleTitle       = "Balloon Game Highscores"
@@ -18,6 +23,7 @@ const (
 )
 
 var (
+	views   int
 	myboard *scoreboard.Scoreboard
 	lastmod time.Time
 )
@@ -70,10 +76,11 @@ func myInternalError(err error) string {
 // GET board info
 // displays all information about the scoreboard.
 func getBoardHandler(w http.ResponseWriter, r *http.Request) {
+	views++
 	if hasBeenModified() {
 		reload()
 	}
-	b, err := json.Marshal(myboard)
+	b, err := json.Marshal(Page{myboard, views})
 	if err != nil {
 		http.Error(w, myInternalError(err), http.StatusInternalServerError)
 		return
