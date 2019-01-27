@@ -14,7 +14,7 @@ import (
 const (
 	filename           = "first"
 	exampleTitle       = "Balloon Game Highscores"
-	exampleDescription = "An example of a very simplistic"
+	exampleDescription = "simple highscores example"
 )
 
 var (
@@ -41,7 +41,8 @@ func hasBeenModified() bool {
 	if !ok {
 		log.Println("hasBeenModified: cannot retrieve last-modified time.")
 	}
-	return lmod == lastmod
+	// log.Printf("checking last mods...\n\tsaved: %v\n\tactual: %v\n\thasBeenModified: %v", lastmod, lmod, !lmod.Equal(lastmod))
+	return !lmod.Equal(lastmod)
 }
 
 func updateLastMod() {
